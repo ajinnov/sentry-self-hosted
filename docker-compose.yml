@@ -400,8 +400,8 @@ services:
     command: '"0 0 * * * gosu sentry sentry cleanup --days $SENTRY_EVENT_RETENTION_DAYS"'
   nginx:
     <<: *restart_policy
-    ports:
-      - "$SENTRY_BIND:80/tcp"
+      #ports:
+      #- "$SENTRY_BIND:80/tcp"
     image: "nginx:1.22.0-alpine"
     labels:
       - traefik.http.routers.sentry-http.rule=Host(`sentry.pasteur.aj-innov.fr`)
@@ -411,7 +411,7 @@ services:
       - traefik.http.routers.sentry-https.entrypoints=https
       - traefik.http.routers.sentry-https.tls=true
       - traefik.http.routers.sentry-https.tls.certresolver=letsencrypt
-      - traefik.http.services.sentry.loadbalancer.server.port=9000
+      - traefik.http.services.sentry.loadbalancer.server.port=80
       - traefik.http.middlewares.redirect.redirectscheme.scheme=https
     volumes:
       - type: bind
@@ -428,6 +428,8 @@ services:
   relay:
     <<: *restart_policy
     image: "$RELAY_IMAGE"
+    networks:
+      - sentry
     volumes:
       - type: bind
         read_only: true
@@ -472,6 +474,5 @@ volumes:
 
 networks:
   sentry:
-    external: false
   proxy:
     external: true
